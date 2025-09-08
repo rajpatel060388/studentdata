@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Data Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex min-h-screen bg-gray-100">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-blue-900 text-white p-4">
+    <h2 class="text-xl font-bold mb-6">DISE Portal</h2>
+    <nav>
+      <ul>
+        <li class="mb-3"><button onclick="showStandards()" class="hover:text-yellow-300">Manage Students</button></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main id="mainContent" class="flex-1 p-6">
+    <h1 class="text-2xl font-bold">Welcome</h1>
+    <p class="mt-2">Click <b>Manage Students</b> to view Standards.</p>
+  </main>
+
+  <script>
+    // Demo student data
+    const studentsData = {
+      1: [
+        { roll: 1, name: "Raj Patel", father: "Ketan Patel", mother: "Rekha Patel", caste: "General", sub: "Patel" },
+        { roll: 2, name: "Amit Shah", father: "Mahesh Shah", mother: "Sunita Shah", caste: "OBC", sub: "Yadav" }
+      ],
+      2: [
+        { roll: 1, name: "Rina Mehta", father: "Paresh Mehta", mother: "Kavita Mehta", caste: "SC", sub: "Valmiki" }
+      ]
+    };
+
+    const subCastes = {
+      General: ["Patel", "Brahmin", "Other"],
+      OBC: ["Yadav", "Kurmi", "Other"],
+      SC: ["Valmiki", "Chamar", "Other"],
+      ST: ["Gonds", "Bhils", "Other"]
+    };
+
+    // Show Standards
+    function showStandards() {
+      let html = `<h1 class="text-2xl font-bold mb-4">Select Standard</h1><ul class="list-disc pl-6">`;
+      for (let i = 1; i <= 8; i++) {
+        html += `<li><button class="text-blue-600 underline" onclick="showStudents(${i})">Standard ${i}</button></li>`;
+      }
+      html += `</ul>`;
+      document.getElementById("mainContent").innerHTML = html;
+    }
+
+    // Show Students
+    function showStudents(std) {
+      let html = `<h1 class="text-2xl font-bold mb-4">Students in Standard ${std}</h1>`;
+      if (!studentsData[std] || studentsData[std].length === 0) {
+        html += `<p>No students available.</p>`;
+      } else {
+        html += `<ul class="list-decimal pl-6">`;
+        studentsData[std].forEach(s => {
+          html += `<li>${s.name} <button class="text-blue-600 underline" onclick="editStudent(${std},${s.roll})">Edit</button></li>`;
+        });
+        html += `</ul>`;
+      }
+      document.getElementById("mainContent").innerHTML = html;
+    }
+
+    // Edit Form
+    function editStudent(std, roll) {
+      const student = studentsData[std].find(s => s.roll === roll);
+
+      let casteOptions = ["General","OBC","SC","ST"].map(c =>
+        `<option value="${c}" ${c===student.caste?"selected":""}>${c}</option>`
+      ).join("");
+
+      let subOptions = subCastes[student.caste].map(sc =>
+        `<option value="${sc}" ${sc===student.sub?"selected":""}>${sc}</option>`
+      ).join("");
+
+      let html = `
+        <h1 class="text-2xl font-bold mb-4">Edit Student</h1>
+        <form id="editForm" class="bg-white p-6 rounded shadow-md max-w-lg">
+          <div class="mb-4">
+            <label class="block mb-1 font-semibold">Roll No</label>
+            <input type="text" id="roll" value="${student.roll}" class="w-full border px-3 py-2 rounded" readonly>
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1 font-semibold">Student Name</label>
+            <input type="text" id="name" value="${student.name}" class="w-full border px-3 py-2 rounded">
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1 font-semibold">Father Name</label>
+            <input type="text" id="father" value="${student.father}" class="w-full border px-3 py-2 rounded">
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1 font-semibold">Mother Name</label>
+            <input type="text" id="mother" value="${student.mother}" class="w-full border px-3 py-2 rounded">
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1 font-semibold">Caste</label>
+            <select id="caste" class="w-full border px-3 py-2 rounded" onchange="updateSubCaste(this.value)">
+              ${casteOptions}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block mb-1 font-semibold">Sub-Caste</label>
+            <select id="subCaste" class="w-full border px-3 py-2 rounded">
+              ${subOptions}
+            </select>
+          </div>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-800">Save</button>
+        </form>
+        <div id="savedData" class="mt-6"></div>
+      `;
+      document.getElementById("mainContent").innerHTML = html;
+
+      // Handle save
+      document.getElementById("editForm").onsubmit = function(e) {
+        e.preventDefault();
+        const updated = {
+          roll: document.getElementById("roll").value,
+          name: document.getElementById("name").value,
+          father: document.getElementById("father").value,
+          mother: document.getElementById("mother").value,
+          caste: document.getElementById("caste").value,
+          sub: document.getElementById("subCaste").value
+        };
+        document.getElementById("savedData").innerHTML = `
+          <h2 class="text-xl font-bold mb-2">Saved Student Details:</h2>
+          <p><b>Roll No:</b> ${updated.roll}</p>
+          <p><b>Name:</b> ${updated.name}</p>
+          <p><b>Father:</b> ${updated.father}</p>
+          <p><b>Mother:</b> ${updated.mother}</p>
+          <p><b>Caste:</b> ${updated.caste}</p>
+          <p><b>Sub-Caste:</b> ${updated.sub}</p>
+        `;
+      };
+    }
+
+    // Update sub-caste dropdown
+    function updateSubCaste(caste) {
+      const subSelect = document.getElementById("subCaste");
+      subSelect.innerHTML = "";
+      if (subCastes[caste]) {
+        subCastes[caste].forEach(sc => {
+          const opt = document.createElement("option");
+          opt.value = sc;
+          opt.textContent = sc;
+          subSelect.appendChild(opt);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
